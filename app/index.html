@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apresente-se</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Apresente-se!</h1>
+    <p>Conheça o grupo e conecte-se!</p>
+  </header>
+
+  <div class="container">
+    <!-- Formulário de Cadastro -->
+    <section class="form-section" id="form-section">
+      <h2>Queremos Te Conhecer</h2>
+      <form id="bioForm">
+        <label for="name">Nome:</label>
+        <input type="text" id="name" name="name" placeholder="Digite seu nome" required>
+
+        <label for="bio">Bio:</label>
+        <textarea id="bio" name="bio" placeholder="Digite sua bio" rows="4" required></textarea>
+
+        <label for="instagram">Instagram:</label>
+        <input type="url" id="socialInstagram" name="instagram" placeholder="https://instagram.com/seu-usuario">
+
+        <label for="linkedin">LinkedIn:</label>
+        <input type="url" id="socialLinkedin" name="linkedin" placeholder="https://linkedin.com/in/seu-usuario">
+
+        <label for="x">X (Twitter):</label>
+        <input type="url" id="socialX" name="x" placeholder="https://x.com/seu-usuario">
+
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <div id="bios-list" class="card-grid">
+    </div>
+  </div>
+
+  <footer>
+    © 2024 Apresente-se | Desenvolvido para conexões genuínas.  
+    <a href="https://www.linkedin.com/in/robsonmrosa" target="_blank" style="color: #fff; text-decoration: none; margin-left: 10px;">
+      Conecte-se comigo no LinkedIn
+    </a>  
+    |  
+    <a href="https://nubank.com.br/cobrar/1c4zo/6761b6b2-2199-4ff4-b494-6ee63914d194" target="_blank" style="color: #fff; text-decoration: none; margin-left: 10px;">
+      Me pague um café
+    </a>
+  </footer>
+</body>
+</html>
