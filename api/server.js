@@ -6,8 +6,8 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 const app = express();
-const PORT = 3000;
-const MONGO_URI = 'mongodb://localhost:27017/apresente-se';
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.DATABASE_URL || 'mongodb://localhost:27017/apresente-se';
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -50,6 +50,14 @@ async function getInstagramProfileMeta(url) {
   }
 }
 
+app.get('/api/profile/image', async (req, res) => {
+  const { url } = req.query;
+  if (!url) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
+  return await getInstagramProfileMeta(url);
+});
+
 app.post('/api/bios', async (req, res) => {
   try {
     const { name, bio, linkedin, instagram, x, k } = req.body;
@@ -62,7 +70,8 @@ app.post('/api/bios', async (req, res) => {
       return res.status(400).json({ error: 'Nome e bio são obrigatórios.' });
     }
 
-    const newBio = new Bio({ name, bio, linkedin, instagram, x, k });
+    const profileImage = await getInstagramProfileMeta(instagram);
+    const newBio = new Bio({ name, bio, linkedin, instagram, x, k, profileImage });
     await newBio.save();
 
     res.status(201).json({ message: 'Bio salva com sucesso!', data: newBio });
@@ -79,7 +88,7 @@ app.get('/api/bios', async (req, res) => {
 
     for (let i = 0; i < bios.length ; i++) {
       const bio = bios[i];
-      if (bio.instagram && bio.instagram !== '') {
+      if (bio.instagram && bio.instagram !== '' && !bio.profileImageUrl) {
         bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
       }
     }    
@@ -92,6 +101,10 @@ app.get('/api/bios', async (req, res) => {
 });
 
 app.delete('/api/bios', async (req, res) => {
+  const k = req.query.k;
+  if (k != 'uzhPyefda0TuWSv') {
+    res.status(403).json();
+  }
   try {
     await Bio.deleteMany();
     res.status(204).json();
