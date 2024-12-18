@@ -34,10 +34,15 @@ const Bio = mongoose.model('Bio', bioSchema);
 async function getInstagramProfileMeta(url) {
   try {
     const { data } = await axios.get(url);
-    
+    console.log('data', data);
+
     const $ = cheerio.load(data);
+    console.log('metadata', $("meta[property='og:image']"));
+
     const profileImage = $("meta[property='og:image']").attr('content');
+    console.log('profileImage', profileImage);
     
+
     if (profileImage) {
       return profileImage;
     } else {
