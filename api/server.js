@@ -14,16 +14,17 @@ const REDIS_PASSWORD = process.env.REDIS_PASSWORD || '';
 app.use(cors());
 app.use(bodyParser.json());
 
-const client = redis.createClient({
+const redisClient = redis.createClient({
   host: 'localhost',
   port: 6379,
   password: REDIS_PASSWORD, 
 });
 
-client.connect();
-client.on('connect', () => {
+redisClient.on('connect', () => {
   console.log('Conectado ao Redis');
 });
+
+redisClient.connect();
 
 mongoose.connect(MONGO_URI, {})
   .then(() => console.log('Conectado ao MongoDB!'))
@@ -86,7 +87,7 @@ app.post('/api/bios', async (req, res) => {
     const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k, profileImage });
     await newBio.save();
 
-    client.del(k, (err) => {
+    redisClient.del(k, (err) => {
       if (err) {
         console.error('Erro ao limpar o cache', err);
       }
@@ -99,40 +100,45 @@ app.post('/api/bios', async (req, res) => {
   }
 });
 
-app.get('/api/bios', async (req, res) => {
+const cacheMiddleware = async (req, res, next) => {
   const k = req.query.k;
+  if (!k) {
+    return res.status(400).json({ error: 'A query parameter "k" is required.' });
+  }
 
-  client.get(k, async (err, cachedData) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Erro no Redis' });
+  try {
+    console.log('Buscando dados no cache para a chave: ' + k)
+    const data = await redisClient.get(k);
+    if (data) {
+      console.log('Dados enontrados no cache para a chave: ' + k)
+      return res.status(200).json(JSON.parse(data));
     }
+  } catch (err) {
+    console.error('Redis GET error:', err);
+  }
 
-    if (cachedData) {
-      console.log('Cache encontrado para ' + k);
-      return res.json(JSON.parse(cachedData));
-    }
+  next();
+};
 
-    // não encontrado no cache
-    try {
-      const bios = await Bio.find({ k });
-  
-      for (let i = 0; i < bios.length ; i++) {
-        const bio = bios[i];
-        if (bio.instagram && bio.instagram !== '' && !bio.profileImageUrl) {
-          bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
-        }
+app.get('/api/bios', cacheMiddleware, async (req, res) => {
+  const k = req.query.k;
+  try {
+    const bios = await Bio.find({ k });
+
+    for (let i = 0; i < bios.length ; i++) {
+      const bio = bios[i];
+      if (bio.instagram && bio.instagram !== '' && !bio.profileImageUrl) {
+        bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
       }
-  
-      client.setex(k, 86400, JSON.stringify(bios));
-      console.log('Cache não encontrado, gerando novo dado com tempo de vida de 1 dia');
-
-      res.status(200).json(bios);
-    } catch (err) {
-      console.error('Erro ao buscar bios:', err);
-      res.status(500).json({ error: 'Erro ao buscar bios.' });
     }
-  });
+
+    console.log('Dados não encontrados no cache, salvando dados para a chave: ' + k)
+    await redisClient.set(k, JSON.stringify(bios));
+    res.status(200).json(bios);
+  } catch (err) {
+    console.error('Erro ao buscar bios:', err);
+    res.status(500).json({ error: 'Erro ao buscar bios.' });
+  }
 });
 
 app.delete('/api/bios', async (req, res) => {
