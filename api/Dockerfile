@@ -15,10 +15,12 @@ COPY . .
 
 # Argumentos para definir variáveis de ambiente em tempo de build
 ARG DATABASE_URL
+ARG REDIS_PASSWORD
 ARG PORT
 
 # Defina essas variáveis como variáveis de ambiente dentro do container
 ENV DATABASE_URL=${DATABASE_URL}
+ENV REDIS_PASSWORD=${REDIS_PASSWORD}
 ENV PORT=${PORT}
 
 # Exponha a porta para o servidor
