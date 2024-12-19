@@ -35,8 +35,8 @@ async function getInstagramProfileMeta(url) {
   try {
     const { data } = await axios.get(url, { headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Origin': 'https://www.instagram.com', 
-      'Referer': 'https://www.instagram.com/',
+      'Origin': 'http://localhost:3000', 
+      'Referer': 'http://localhost:3000',
     }});
     const $ = cheerio.load(data);
     const profileImage = $("meta[property='og:image']").attr('content');
