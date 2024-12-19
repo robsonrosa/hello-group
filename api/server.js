@@ -60,7 +60,7 @@ app.get('/api/profile/image', async (req, res) => {
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
   }
-  return await getInstagramProfileMeta(url);
+  return res.status(200).json(await getInstagramProfileMeta(url));
 });
 
 app.post('/api/bios', async (req, res) => {
