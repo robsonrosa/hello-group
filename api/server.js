@@ -4,18 +4,27 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const redis = require('redis');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.DATABASE_URL || 'mongodb://localhost:27017/apresente-se';
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD || '';
 
 app.use(cors());
 app.use(bodyParser.json());
 
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+const client = redis.createClient({
+  host: 'localhost',
+  port: 6379,
+  password: REDIS_PASSWORD, 
+});
+
+client.on('connect', () => {
+  console.log('Conectado ao Redis');
+});
+
+mongoose.connect(MONGO_URI, {})
   .then(() => console.log('Conectado ao MongoDB!'))
   .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
@@ -38,9 +47,7 @@ async function getInstagramProfileMeta(url) {
       'User-Agent': 'Mozilla/5.0'
     }});
     const $ = cheerio.load(data);
-    const profileImage = $("meta[property='og:image']").attr('content');
-    console.log('profileImage', profileImage);
-    
+    const profileImage = $("meta[property='og:image']").attr('content');    
 
     if (profileImage) {
       return profileImage;
@@ -78,6 +85,12 @@ app.post('/api/bios', async (req, res) => {
     const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k, profileImage });
     await newBio.save();
 
+    client.del(k, (err) => {
+      if (err) {
+        console.error('Erro ao limpar o cache', err);
+      }
+    });
+
     res.status(201).json({ message: 'Bio salva com sucesso!', data: newBio });
   } catch (err) {
     console.error('Erro ao salvar bio:', err);
@@ -87,21 +100,38 @@ app.post('/api/bios', async (req, res) => {
 
 app.get('/api/bios', async (req, res) => {
   const k = req.query.k;
-  try {
-    const bios = await Bio.find({ k });
 
-    for (let i = 0; i < bios.length ; i++) {
-      const bio = bios[i];
-      if (bio.instagram && bio.instagram !== '' && !bio.profileImageUrl) {
-        bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
+  client.get(k, async (err, cachedData) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Erro no Redis' });
+    }
+
+    if (cachedData) {
+      console.log('Cache encontrado para ' + k);
+      return res.json(JSON.parse(cachedData));
+    }
+
+    // não encontrado no cache
+    try {
+      const bios = await Bio.find({ k });
+  
+      for (let i = 0; i < bios.length ; i++) {
+        const bio = bios[i];
+        if (bio.instagram && bio.instagram !== '' && !bio.profileImageUrl) {
+          bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
+        }
       }
-    }    
+  
+      client.setex(k, 86400, JSON.stringify(bios));
+      console.log('Cache não encontrado, gerando novo dado com tempo de vida de 1 dia');
 
-    res.status(200).json(bios);
-  } catch (err) {
-    console.error('Erro ao buscar bios:', err);
-    res.status(500).json({ error: 'Erro ao buscar bios.' });
-  }
+      res.status(200).json(bios);
+    } catch (err) {
+      console.error('Erro ao buscar bios:', err);
+      res.status(500).json({ error: 'Erro ao buscar bios.' });
+    }
+  });
 });
 
 app.delete('/api/bios', async (req, res) => {
