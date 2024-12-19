@@ -1,83 +1,64 @@
-document.addEventListener('DOMContentLoaded', function() {
-  const formSection = document.getElementById('form-section');
-  const biosList = document.getElementById('bios-list');
+const App = (() => {
+  const API_URL =
+    window.location.hostname === 'localhost'
+      ? 'http://localhost:3000/api/bios'
+      : 'https://ef15-45-230-42-93.ngrok-free.app/api/bios';
+
+  let DOM = {};
+  const domLoader = () => ({
+    loader: document.getElementById('loader'),
+    formSection: document.getElementById('form-section'),
+    biosList: document.getElementById('bios-list'),
+    searchBar: document.getElementById('search-bar'),
+    searchInput: document.getElementById('searchInput'),
+    bioForm: document.getElementById('bioForm'),
+    fields: {
+      name: document.getElementById('name'),
+      area: document.getElementById('area'),
+      bio: document.getElementById('bio'),
+      socialX: document.getElementById('socialX'),
+      socialInstagram: document.getElementById('socialInstagram'),
+      socialLinkedin: document.getElementById('socialLinkedin'),
+    },
+  });
   
-  if (localStorage.getItem('bioSubmitted')) {
-    formSection.style.display = 'none';
-    loadBios(); 
-  } else if (!getey()) {
-    formSection.style.display = 'none';
-    alert('Você precisa de uma chave para acessar: solicite ao administrador da turma.')
-  } else {
-    
-    document.getElementById('bioForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-      const k = getey(); 
-      const name = document.getElementById('name').value;
-      const bio = document.getElementById('bio').value;
-      const x = document.getElementById('socialX').value;
-      const instagram = document.getElementById('socialInstagram').value;
-      const linkedin = document.getElementById('socialLinkedin').value;
-      
-      const userBio = { name, bio, x, instagram, linkedin, k };
+  const showLoader = () => (DOM.loader.style.display = 'flex');
+  const hideLoader = () => (DOM.loader.style.display = 'none');
 
-      try {
-        
-        const response = await fetch('http://localhost:3000/api/bios', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userBio),
-        });
+  const getKey = () => new URLSearchParams(window.location.search).get('k');
 
-        if (response.ok) {
-          alert('Sua bio foi salva com sucesso!');
-          localStorage.setItem('bioSubmitted', 'true'); 
-          formSection.style.display = 'none';
-          loadBios(); 
-        } else {
-          alert('Erro ao salvar a bio. Tente novamente.');
-        }
-      } catch (error) {
-        console.error('Erro ao enviar os dados:', error);
-        alert('Erro ao salvar a bio. Tente novamente.');
-      }
-    });
-  }
+  const socialIcon = (name, icon, url) =>
+    url
+      ? `
+        <a name="${name.toLowerCase()}" href="${url}" target="_blank" title="Perfil no ${name}">
+          <img src="${icon}" alt="${name}" class="icon">
+        </a>
+      `
+      : '';
 
-  function getey() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('k'); 
-  }
-
-  function socialIcon(name, icon, url) {
-    if (!url || url === '') {
-      return '';
-    }
-    
-    return `
-      <a href="${url}" target="_blank" title="Perfil no ${name}">
-        <img src="${icon}" alt="${name}" class="icon">
-      </a>
-    `;
-  }
-
-  async function loadBios() {
+  const loadBios = async () => {
     try {
-      const k = getey();
-      const response = await fetch(`http://localhost:3000/api/bios?k=${k}`);
-      const bios = await response.json();
-      biosList.innerHTML = ''; 
+      showLoader();
+      DOM.searchBar.style.display = 'flex';
 
-      console.log(bios)
-      bios.forEach(bio => {
+      const k = getKey();
+      const response = await fetch(`${API_URL}?k=${k}`, {
+        headers: { 'ngrok-skip-browser-warning': 'true' },
+      });
+
+      if (!response.ok) throw new Error('Erro ao carregar as bios.');
+
+      const bios = await response.json();
+      DOM.biosList.innerHTML = '';
+
+      bios.forEach((bio) => {
         const bioCard = document.createElement('div');
         bioCard.classList.add('card');
         bioCard.innerHTML = `
-          <div class="profile-image" style="background-image: url('${bio.profileImageUrl}');"></div>
+          <div class="profile-image" style="background-image: url('${bio.profileImageUrl || generateAvatar()}');"></div>
           <div class="card-content">
             <h2 class="card-title">${bio.name}</h2>
+            <span class="card-area">${bio.area || ''}</span>
             <p class="card-bio">${bio.bio}</p>
             <div class="card-links">
               ${socialIcon('X', 'https://cdn-icons-png.flaticon.com/512/733/733635.png', bio.x)}
@@ -86,10 +67,96 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           </div>
         `;
-        biosList.appendChild(bioCard);
+        DOM.biosList.appendChild(bioCard);
       });
     } catch (error) {
-      console.error('Erro ao carregar as bios:', error);
+      console.error(error);
+    } finally {
+      hideLoader();
     }
-  }
-});
+  };
+
+  const generateAvatar = () =>
+    `https://avatar.iran.liara.run/public/${Math.floor(Math.random() * 100) + 1}`;
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+
+    const isValid = DOM.bioForm.checkValidity();
+    if (!isValid) {
+      alert('Por favor, preencha todos os campos corretamente.');
+      return;
+    }
+
+    const userBio = {
+      name: DOM.fields.name.value,
+      area: DOM.fields.area.value,
+      bio: DOM.fields.bio.value,
+      x: DOM.fields.socialX.value,
+      instagram: DOM.fields.socialInstagram.value,
+      linkedin: DOM.fields.socialLinkedin.value,
+      k: getKey(),
+    };
+
+    try {
+      showLoader();
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify(userBio),
+      });
+
+      if (response.ok) {
+        alert('Sua bio foi salva com sucesso!');
+        localStorage.setItem('bioSubmitted', userBio.k);
+        DOM.formSection.style.display = 'none';
+        loadBios();
+      } else {
+        throw new Error('Erro ao salvar a bio.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao salvar a bio. Tente novamente.');
+    } finally {
+      hideLoader();
+    }
+  };
+
+  const filterBios = () => {
+    const searchQuery = DOM.searchInput.value.toLowerCase();
+    Array.from(DOM.biosList.getElementsByClassName('card')).forEach((bioCard) => {
+      const name = bioCard.querySelector('.card-title').textContent.toLowerCase();
+      const area = bioCard.querySelector('.card-area').textContent.toLowerCase();
+      const instagram = bioCard.querySelector('.card-links a[name="instagram"]')?.href.toLowerCase() || '';
+
+      bioCard.style.display =
+        name.includes(searchQuery) || area.includes(searchQuery) || instagram.includes(searchQuery)
+          ? 'block'
+          : 'none';
+    });
+  };
+
+  const init = () => {
+    DOM = domLoader();
+    const k = getKey();
+
+    if (localStorage.getItem('bioSubmitted') === k) {
+      DOM.formSection.style.display = 'none';
+      loadBios();
+    } else if (!k) {
+      DOM.formSection.style.display = 'none';
+      alert('Você precisa de uma chave para acessar: solicite ao administrador da turma.');
+    } else {
+      DOM.bioForm.addEventListener('submit', handleFormSubmit);
+    }
+
+    DOM.searchInput.addEventListener('input', filterBios);
+  };
+
+  return { init };
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);

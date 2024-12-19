@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Apresente-se</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Apresente-se e Conecte-se</title>
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="stylesheet" href="style.css">
   <script src="script.js"></script>
 </head>
@@ -14,42 +15,74 @@
   </header>
 
   <div class="container">
-    <!-- Formulário de Cadastro -->
+    
     <section class="form-section" id="form-section">
       <h2>Queremos Te Conhecer</h2>
       <form id="bioForm">
         <label for="name">Nome:</label>
         <input type="text" id="name" name="name" placeholder="Digite seu nome" required>
 
+        <label for="area">Área de Atuação:</label>
+        <select id="area" name="area" required>
+          <option value="">Escolha uma área</option>
+          <option value="Tecnologia e TI">Tecnologia e TI</option>
+          <option value="Marketing e Vendas">Marketing e Vendas</option>
+          <option value="Negócios e Empreendedorismo">Negócios e Empreendedorismo</option>
+          <option value="Saúde e Bem">Saúde e Bem-estar</option>
+          <option value="Educação">Educação</option>
+          <option value="Arte e Cultura">Arte e Cultura</option>
+          <option value="Direito e Jurídico">Direito e Jurídico</option>
+          <option value="Ciências e Pesquisa">Ciências e Pesquisa</option>
+          <option value="Indústria e Engenharia">Indústria e Engenharia</option>
+          <option value="Financeiro e Contábil">Financeiro e Contábil</option>
+          <option value="Serviços e Atendimentos">Serviços e Atendimentos</option>
+          <option value="Comunicação e Mídia">Comunicação e Mídia</option>
+          <option value="Turismo e Hospitalidade">Turismo e Hospitalidade</option>
+          <option value="Indústria Criativa">Indústria Criativa</option>
+        </select>
+
         <label for="bio">Bio:</label>
-        <textarea id="bio" name="bio" placeholder="Digite sua bio" rows="4" required></textarea>
+        <textarea id="bio" name="bio" placeholder="Digite sua bio" rows="6" required ></textarea>
 
         <label for="instagram">Instagram:</label>
-        <input type="url" id="socialInstagram" name="instagram" placeholder="https://instagram.com/seu-usuario">
+        <input type="url" id="socialInstagram" name="instagram" pattern="https?://(?:www\.)?instagram\.com/[a-zA-Z0-9._-]+/?" title="A URL do Instagram deve ser do formato https://www.instagram.com/username" placeholder="https://instagram.com/seu-usuario">
 
         <label for="linkedin">LinkedIn:</label>
-        <input type="url" id="socialLinkedin" name="linkedin" placeholder="https://linkedin.com/in/seu-usuario">
+        <input type="url" id="socialLinkedin" name="linkedin" pattern="https?://(?:www\.)?linkedin\.com/in/[a-zA-Z0-9_-]+/?" title="A URL do LinkedIn deve ser do formato https://www.linkedin.com/in/username" placeholder="https://linkedin.com/in/seu-usuario">
 
         <label for="x">X (Twitter):</label>
-        <input type="url" id="socialX" name="x" placeholder="https://x.com/seu-usuario">
+        <input type="url" id="socialX" name="x" pattern="https?://(?:www\.)?x\.com/[a-zA-Z0-9_]+/?" title="A URL do X deve ser do formato https://x.com/username" placeholder="https://x.com/seu-usuario">
 
         <button type="submit">Enviar</button>
       </form>
     </section>
 
-    <div id="bios-list" class="card-grid">
-    </div>
+    <div id="search-bar" class="search-container">
+      <input type="text" id="searchInput" placeholder="Pesquise por nome, área ou Instagram..." />
+    </div>    
+
+    <div id="bios-list" class="card-grid"></div>
   </div>
 
+  <div id="loader" class="loader" style="display:none;">
+    <div class="spinner"></div>
+    <p>Carregando...</p>
+  </div>  
+
   <footer>
-    © 2024 Apresente-se | Desenvolvido para conexões genuínas.  
-    <a href="https://www.linkedin.com/in/robsonmrosa" target="_blank" style="color: #fff; text-decoration: none; margin-left: 10px;">
-      Conecte-se comigo no LinkedIn
-    </a>  
-    |  
-    <a href="https://nubank.com.br/cobrar/1c4zo/6761b6b2-2199-4ff4-b494-6ee63914d194" target="_blank" style="color: #fff; text-decoration: none; margin-left: 10px;">
-      Me pague um café
-    </a>
+    © 2024 Apresente-se | Desenvolvido para conexões genuínas. 
+    <div>
+      <a href="https://www.linkedin.com/in/robsonmrosa" target="_blank" style="color: #fff; text-decoration: none; margin-left: 10px;">
+        Conecte-se comigo no LinkedIn
+      </a>  
+      |  
+      <a href="https://nubank.com.br/cobrar/1c4zo/6761b6b2-2199-4ff4-b494-6ee63914d194" target="_blank" style="color: #fff; text-decoration: none; margin-left: 10px;">
+        Se gostou, me paga um café ;)
+      </a>
+    </div>
+    <div>
+      <a href="https://www.flaticon.com/br/icones-gratis/conectar" title="conectar ícones">Ícone por Eucalyp</a>
+    </div>
   </footer>
 </body>
 </html>
