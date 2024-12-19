@@ -22,6 +22,7 @@ mongoose.connect(MONGO_URI, {
 const bioSchema = new mongoose.Schema({
   k: { type: String, required: true },
   name: { type: String, required: true },
+  area: { type: String, required: true },
   bio: { type: String, required: true },
   linkedin: { type: String, required: false },
   instagram: { type: String, required: false },
@@ -34,9 +35,7 @@ const Bio = mongoose.model('Bio', bioSchema);
 async function getInstagramProfileMeta(url) {
   try {
     const { data } = await axios.get(url, { headers: {
-      'User-Agent': 'Mozilla/5.0',
-      'Origin': 'http://localhost:3000', 
-      'Referer': 'http://localhost:3000',
+      'User-Agent': 'Mozilla/5.0'
     }});
     const $ = cheerio.load(data);
     const profileImage = $("meta[property='og:image']").attr('content');
@@ -65,7 +64,7 @@ app.get('/api/profile/image', async (req, res) => {
 
 app.post('/api/bios', async (req, res) => {
   try {
-    const { name, bio, linkedin, instagram, x, k } = req.body;
+    const { name, area, bio, linkedin, instagram, x, k } = req.body;
 
     if (!k) {
       return res.status(400).json({ error: 'Você precisa de uma chave para acessar: solicite ao administrador da turma.' });
@@ -76,7 +75,7 @@ app.post('/api/bios', async (req, res) => {
     }
 
     const profileImage = await getInstagramProfileMeta(instagram);
-    const newBio = new Bio({ name, bio, linkedin, instagram, x, k, profileImage });
+    const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k, profileImage });
     await newBio.save();
 
     res.status(201).json({ message: 'Bio salva com sucesso!', data: newBio });
