@@ -37,8 +37,7 @@ const bioSchema = new mongoose.Schema({
   bio: { type: String, required: true },
   linkedin: { type: String, required: false },
   instagram: { type: String, required: false },
-  x: { type: String, required: false },
-  profileImageUrl: { type: String, required: false },
+  x: { type: String, required: false }
 });
 
 const Bio = mongoose.model('Bio', bioSchema);
@@ -83,7 +82,6 @@ app.post('/api/bios', async (req, res) => {
       return res.status(400).json({ error: 'Nome e bio são obrigatórios.' });
     }
 
-    const profileImage = await getInstagramProfileMeta(instagram);
     const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k, profileImage });
     await newBio.save();
 
@@ -127,7 +125,7 @@ app.get('/api/bios', cacheMiddleware, async (req, res) => {
 
     for (let i = 0; i < bios.length ; i++) {
       const bio = bios[i];
-      if (bio.instagram && bio.instagram !== '' && !bio.profileImageUrl) {
+      if (bio.instagram && bio.instagram !== '') {
         bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
       }
     }
