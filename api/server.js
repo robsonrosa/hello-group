@@ -37,6 +37,7 @@ const bioSchema = new mongoose.Schema({
   bio: { type: String, required: true },
   linkedin: { type: String, required: false },
   instagram: { type: String, required: false },
+  profileImageUrl: { type: String, required: false },
   x: { type: String, required: false }
 });
 
@@ -127,10 +128,13 @@ app.get('/api/bios', cacheMiddleware, async (req, res) => {
       const bio = bios[i];
       if (bio.instagram && bio.instagram !== '') {
         bio.profileImageUrl = await getInstagramProfileMeta(bio.instagram);
+        console.log('Profile picture:', bio.profileImageUrl);
+      } else {
+        console.log('Bio sem instagram:', bio);
       }
     }
 
-    console.log('Dados não encontrados no cache, salvando dados para a chave: ' + k)
+    console.log('Dados não encontrados no cache, salvando dados para a chave: ' + k, bios)
     await redisClient.set(k, JSON.stringify(bios));
     res.status(200).json(bios);
   } catch (err) {
