@@ -82,7 +82,7 @@ app.post('/api/bios', async (req, res) => {
       return res.status(400).json({ error: 'Nome e bio são obrigatórios.' });
     }
 
-    const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k, profileImage });
+    const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k });
     await newBio.save();
 
     redisClient.del(k, (err) => {
