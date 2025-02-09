@@ -2,7 +2,7 @@ const App = (() => {
   const API_URL =
     window.location.hostname === 'localhost'
       ? 'http://localhost:3000/api/bios'
-      : 'https://ef15-45-230-42-93.ngrok-free.app/api/bios';
+      : 'https://fa7d-45-230-42-37.ngrok-free.app/api/bios';
 
   let DOM = {};
   const domLoader = () => ({
