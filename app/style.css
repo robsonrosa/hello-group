@@ -99,7 +99,7 @@ footer a {
   color: #333;
 }
 
-.card-area, card-digital {
+.card-area, .card-digital {
   font-size: 0.8rem;
   margin-bottom: 0.5rem;
   font-style: italic;
