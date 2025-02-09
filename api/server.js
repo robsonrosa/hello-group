@@ -34,6 +34,7 @@ const bioSchema = new mongoose.Schema({
   k: { type: String, required: true },
   name: { type: String, required: true },
   area: { type: String, required: true },
+  digital: { type: String, required: true },
   bio: { type: String, required: true },
   linkedin: { type: String, required: false },
   instagram: { type: String, required: false },
@@ -73,7 +74,7 @@ app.get('/api/profile/image', async (req, res) => {
 
 app.post('/api/bios', async (req, res) => {
   try {
-    const { name, area, bio, linkedin, instagram, x, k } = req.body;
+    const { name, area, digital, bio, linkedin, instagram, x, k } = req.body;
 
     if (!k) {
       return res.status(400).json({ error: 'Você precisa de uma chave para acessar: solicite ao administrador da turma.' });
@@ -83,7 +84,7 @@ app.post('/api/bios', async (req, res) => {
       return res.status(400).json({ error: 'Nome e bio são obrigatórios.' });
     }
 
-    const newBio = new Bio({ name, area, bio, linkedin, instagram, x, k });
+    const newBio = new Bio({ name, area, digital, bio, linkedin, instagram, x, k });
     await newBio.save();
 
     redisClient.del(k, (err) => {

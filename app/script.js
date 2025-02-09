@@ -15,6 +15,7 @@ const App = (() => {
     fields: {
       name: document.getElementById('name'),
       area: document.getElementById('area'),
+      digital: document.getElementById('digital'),
       bio: document.getElementById('bio'),
       socialX: document.getElementById('socialX'),
       socialInstagram: document.getElementById('socialInstagram'),
@@ -59,6 +60,7 @@ const App = (() => {
           <div class="card-content">
             <h2 class="card-title">${bio.name}</h2>
             <span class="card-area">${bio.area || ''}</span>
+            <span class="card-digital">${bio.digital || ''}</span>
             <p class="card-bio">${bio.bio}</p>
             <div class="card-links">
               ${socialIcon('X', 'https://cdn-icons-png.flaticon.com/512/733/733635.png', bio.x)}
@@ -91,6 +93,7 @@ const App = (() => {
     const userBio = {
       name: DOM.fields.name.value,
       area: DOM.fields.area.value,
+      digital: DOM.fields.digital.value,
       bio: DOM.fields.bio.value,
       x: DOM.fields.socialX.value,
       instagram: DOM.fields.socialInstagram.value,
@@ -130,10 +133,11 @@ const App = (() => {
     Array.from(DOM.biosList.getElementsByClassName('card')).forEach((bioCard) => {
       const name = bioCard.querySelector('.card-title').textContent.toLowerCase();
       const area = bioCard.querySelector('.card-area').textContent.toLowerCase();
+      const digital = bioCard.querySelector('.card-digital').textContent.toLowerCase();
       const instagram = bioCard.querySelector('.card-links a[name="instagram"]')?.href.toLowerCase() || '';
 
       bioCard.style.display =
-        name.includes(searchQuery) || area.includes(searchQuery) || instagram.includes(searchQuery)
+        name.includes(searchQuery) || area.includes(searchQuery) || digital.includes(searchQuery) || instagram.includes(searchQuery)
           ? 'block'
           : 'none';
     });
